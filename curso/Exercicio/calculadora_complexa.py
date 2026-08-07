@@ -2,7 +2,7 @@ import tkinter #tkinter é uma biblioteca para criar interfaces gráficas
 from tkinter import font
 
 #Botões da calculadora
-valores_botoes = [
+button_values = [
     ["AC", "+/-", "%", "÷"],
     ["7", "8", "9", "×"],
     ["4", "5", "6", "-"],
@@ -11,113 +11,101 @@ valores_botoes = [
 ]
 
 #Simbolos da calculadora de direita pra cima
-simbolos_direita = ["÷", "×", "-", "+", "="]
-simbolos_topo = ["AC", "+/-", "%",]
+right_symbols = ["÷", "×", "-", "+", "="]
+top_symbols = ["AC", "+/-", "%",]
 
 #Contagem de linhas e colunas
-contagem_linhas = len(valores_botoes) #5
-contagem_colunas = len(valores_botoes[0]) #4
+row_count = len(button_values) #5
+col_count = len(button_values[0]) #4
 
 #Cores dos botões da calculadora
-cor_cinsa_claro = "#878787"
-cor_preto = "#1A1A1A"
-cor_cinsa_escuro = "#454545"
-cor_laranja = "#009CCC"
-cor_branco = "white"
+color_light_grey = "#878787"
+color_black = "#1A1A1A"
+color_dark_grey = "#454545"
+color_orange = "#009CCC"
+color_white = "white"
 
 #window setup
 window = tkinter.Tk() #Cria a janela
-window.title("Calculadora Complexa") #Titulo da janela
+window.title("Complex Calc") #Titulo da janela
 window.resizable(False, False) #Não permite redimensionar a janela
 
 frame = tkinter.Frame(window) #Cria um frame dentro da janela
-label = tkinter.Label(frame, text="0", font=font.Font(family="Arial", size=45), anchor="e", bg=cor_preto, fg=cor_branco, width=contagem_colunas) #Cria um label dentro do frame, 
+label = tkinter.Label(frame, text="0", font=font.Font(family="Arial", size=45), anchor="e", bg=color_black, fg=color_white, width=col_count) #Cria um label dentro do frame, 
 #com o texto "0", fonte Arial tamanho 45, alinhado à direita, com fundo preto e texto branco
 
-label.grid(row = 0, column = 0, columnspan = contagem_colunas, sticky="ew")
+label.grid(row = 0, column = 0, columnspan = col_count, sticky="ew")
 
-for row in range(contagem_linhas):
-    for col in range(contagem_colunas):
-        value = valores_botoes[row][col]
+for row in range(row_count):
+    for col in range(col_count):
+        value = button_values[row][col]
         button = tkinter.Button(frame, text=value, font=font.Font(family="Arial", size=30),
-                                 width = contagem_colunas - 1, height = 1, 
+                                 width = col_count - 1, height = 1, 
                                   command=lambda value=value: button_clicked(value))
-        if value in simbolos_topo:
-            button.config(bg=cor_cinsa_claro, fg=cor_preto)
-        elif value in simbolos_direita:
-            button.config(bg=cor_laranja, fg=cor_branco)
+        if value in top_symbols:
+            button.config(bg=color_light_grey, fg=color_black)
+        elif value in right_symbols:
+            button.config(bg=color_orange, fg=color_white)
         else:
-            button.config(bg=cor_cinsa_escuro, fg=cor_branco)
+            button.config(bg=color_dark_grey, fg=color_white)
         button.grid(row=row + 1, column=col)
 
 frame.pack()
 
 #A+B, A-B, A*B, A/B
 A = "0"
-operador = None
+operator = None
 B = None
 
 def clear_all():
-    global A, B, operador
+    global A, B, operator
     A = "0"
-    operador = None
+    operator = None
     B = None
-    
-def button_clicked(value):
-    global simbolos_direita, simbolos_topo, A, B, operador
 
-    if value in simbolos_direita:
+def remove_zero_decimal(num):
+    if num % 1 == 0:
+        num = int(num)
+    return str(num)
+
+def button_clicked(value):
+    global right_symbols, top_symbols, A, B, operator
+
+    if value in right_symbols:
         if value == "=":
-            if operador is not None and B is not None:
-                if operador == "+":
-                    A = str(float(A) + float(B))
-                elif operador == "-":
-                    A = str(float(A) - float(B))
-                elif operador == "×":
-                    A = str(float(A) * float(B))
-                elif operador == "÷":
-                    A = str(float(A) / float(B))
-                label["text"] = A
-                B = None
-                operador = None
-        else:
-            if operador is None:
-                operador = value
+            if A is not None and operator is not None:
+                B = label["text"]
+                numA = float(A)
+                numB = float(B)
+
+                if operator == "+":
+                    label["text"] = remove_zero_decimal(numA + numB)
+                elif operator == "-":
+                    label["text"] = remove_zero_decimal(numA - numB)
+                elif operator == "×":
+                    label["text"] = remove_zero_decimal(numA * numB)
+                elif operator == "÷":
+                    label["text"] = remove_zero_decimal(numA / numB)
+
+                clear_all()
+        elif value in "+-×÷":
+            if operator is None:
                 A = label["text"]
                 label["text"] = "0"
-            else:
-                if B is None:
-                    B = label["text"]
-                    if operador == "+":
-                        A = str(float(A) + float(B))
-                    elif operador == "-":
-                        A = str(float(A) - float(B))
-                    elif operador == "×":
-                        A = str(float(A) * float(B))
-                    elif operador == "÷":
-                        A = str(float(A) / float(B))
-                    label["text"] = A
-                    B = None
-                    operador = value
-    elif value in simbolos_topo:
+                B = "0"
+
+    elif value in top_symbols:
         if value == "AC":
             label["text"] = "0"
             A = "0"
             B = None
-            operador = None
+            operator = None
         elif value == "+/-":
-            if label["text"] != "0":
-                if label["text"][0] == "-":
-                    label["text"] = label["text"][1:]
-                else:
-                    label["text"] = "-" + label["text"]
+            result = float(label["text"]) * -1
+            label["text"] = remove_zero_decimal(result)
         elif value == "%":
-            if operador is None:
-                A = str(float(A) / 100)
-                label["text"] = A
-            else:
-                B = str(float(label["text"]) / 100)
-                label["text"] = B
+            result = float(label["text"]) / 100
+            label["text"] = remove_zero_decimal(result)
     else: #digitos ou .
         if value == ".":
             if value not in label["text"]:
